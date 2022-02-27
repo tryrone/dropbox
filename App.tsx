@@ -92,7 +92,6 @@ export default function App() {
   }
 
   const downLoadFile = (fileObj:any) => {
-    // console.log(fileObj)
       dbx.filesDownload({
         path: fileObj?.path_lower
       }).then((res) => {
