@@ -1,0 +1,12 @@
+{
+  "name": "dropbox",
+  "displayName": "dropbox",
+  "expo": {
+    "name": "dropbox",
+    "slug": "dropbox",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
