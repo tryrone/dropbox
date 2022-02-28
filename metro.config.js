@@ -12,5 +12,9 @@ module.exports = {
       ...defaultConfig.resolver.assetExts.filter((ext) => ext !== 'svg'),
     ],
     sourceExts: [...defaultConfig.resolver.sourceExts, 'svg'],
+    extraNodeModules: {
+      crypto: './node_modules/react-native-crypto',
+      stream: require.resolve('readable-stream'),
+    },
   },
 };

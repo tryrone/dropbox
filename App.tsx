@@ -91,14 +91,21 @@ export default function App() {
       );
   }
 
-  const downLoadFile = (fileObj:any) => {
+  const downLoadFile =  (fileObj:any) => {
       dbx.filesDownload({
         path: fileObj?.path_lower
-      }).then((res) => {
+      }).then(async(res) => {
         const downloadedFile = JSON.stringify(res);
-        console.log(JSON.parse(downloadedFile));
+        const downloadedFileObj = JSON.parse(downloadedFile).result;
+        const url = URL.createObjectURL(downloadedFileObj?.fileBlob);
+
+        const imageUri = `data:application/${downloadedFileObj?.fileBlob?._data?.type};base64,` + url;
+
+        console.log(imageUri);
+
       }).catch(e => console.log(e))
   }
+
 
 
   return (
@@ -108,7 +115,7 @@ export default function App() {
         <ScrollView>
           {sortFiles(files).map((file:any) => {
             return (
-              <TouchableOpacity key={file?.id} onPress={() => downLoadFile(file)}>
+              <TouchableOpacity key={file?.id} >
                 <View  style={styles.fileWrapper}>
                   <View style={styles.row}>
                     {file?.thumbnail ? (
@@ -134,7 +141,7 @@ export default function App() {
                     </Text>
                   </View>
                   {file['.tag'] === 'file' && (
-                    <TouchableOpacity style={styles.gestureHandler}>
+                    <TouchableOpacity onPress={() => file['.tag'] === 'file' && downLoadFile(file)} style={styles.gestureHandler}>
                       <MoreSvg />
                     </TouchableOpacity>
                   )}
