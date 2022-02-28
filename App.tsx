@@ -14,7 +14,7 @@ import {
 import { Dropbox } from 'dropbox';
 import FolderSvg from './assets/svgs/folder.svg';
 import FileSvg from './assets/svgs/file.svg';
-import MoreSvg from './assets/svgs/more.svg';
+import DownloadSvg from './assets/svgs/download.svg';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -142,7 +142,7 @@ export default function App() {
                   </View>
                   {file['.tag'] === 'file' && (
                     <TouchableOpacity onPress={() => file['.tag'] === 'file' && downLoadFile(file)} style={styles.gestureHandler}>
-                      <MoreSvg />
+                      <DownloadSvg />
                     </TouchableOpacity>
                   )}
                 </View>
