@@ -9,25 +9,30 @@ import {
   Alert,
   ScrollView,
   TouchableOpacity,
-  Image
+  Image,
+  Platform
 } from 'react-native';
 import { Dropbox } from 'dropbox';
 import FolderSvg from './assets/svgs/folder.svg';
 import FileSvg from './assets/svgs/file.svg';
 import DownloadSvg from './assets/svgs/download.svg';
+import ArrowSvg from './assets/svgs/backArr.svg';
+import RNFS from 'react-native-fs';
+// @ts-ignore
+import { DROPBOX_ACCESS_TOKEN } from '@env';
 
 const { width, height } = Dimensions.get('screen');
 
 export default function App() {
   const dbx = new Dropbox({
-    accessToken:
-      'zo6y71lNJ4gAAAAAAAAAAQWFUyl3xv1FKel7QMD__l8xV9RXL8Gqe1UURvfyPhk-',
+    accessToken: DROPBOX_ACCESS_TOKEN,
     fetch,
   });
   const [files,setFiles] = useState<any[]>([]);
+  const [folderArray, setFolderArray] = useState<any['']>(['']);
 
   const sortFiles = (arr:any) => {
-   const sortedFiles = arr.sort((a,b) => {
+   const sortedFiles = arr.sort((a:any,b:any) => {
       if((a['.tag'] === 'folder' || b['.tag'] === 'folder') && !(a['.tag'] === b['.tag'])){
         return a['.tag'] === 'folder' ? -1 : 1;
       }else{
@@ -41,19 +46,20 @@ export default function App() {
   useEffect(() => {
     dbx
       .filesListFolder({
-        path: '',
+        path: folderArray[folderArray.length - 1],
         limit: 20
       })
       .then((res) => {
         setFiles(res?.result?.entries || []);
         getThumbnails(res?.result?.entries);
       })
-      .catch((e) =>
-        Alert.alert('Error Fetching Data', e?.response?.data || 'token expired', [], {
+      .catch((e) =>{
+       Alert.alert('Error Fetching Data', e?.response?.data || 'token expired', [], {
           cancelable: true,
-        })
+        });
+      }
       );
-  }, []);
+  }, [folderArray]);
 
   const getThumbnails = (filesArray:any) => {
     const paths:any = filesArray.filter((file:any) => file['.tag'] === 'file')
@@ -79,16 +85,6 @@ export default function App() {
 
          setFiles(newStateFiles)
         })
-      .catch((e) =>
-        Alert.alert(
-          'Error Fetching Data',
-          e?.error || 'token expired',
-          [],
-          {
-            cancelable: true,
-          }
-        )
-      );
   }
 
   const downLoadFile =  (fileObj:any) => {
@@ -97,26 +93,45 @@ export default function App() {
       }).then(async(res) => {
         const downloadedFile = JSON.stringify(res);
         const downloadedFileObj = JSON.parse(downloadedFile).result;
-        const url = URL.createObjectURL(downloadedFileObj?.fileBlob);
 
-        const imageUri = `data:application/${downloadedFileObj?.fileBlob?._data?.type};base64,` + url;
-
-        console.log(imageUri);
-
+              RNFS.writeFile(
+                `${RNFS.DownloadDirectoryPath}`,
+                downloadedFileObj?.fileBlob,
+                'ascii'
+              )
+                .then((res) => console.log(res))
+                .catch((err) => console.log(err));
       }).catch(e => console.log(e))
   }
-
-
 
   return (
     <SafeAreaView>
       <StatusBar barStyle="dark-content" />
       <View style={styles.container}>
-        <ScrollView>
-          {sortFiles(files).map((file:any) => {
+        <TouchableOpacity
+          onPress={() => {
+            folderArray.length > 1 &&
+              setFolderArray(folderArray.slice(0, folderArray.length - 1));
+          }}
+          style={styles.backarrow}
+        >
+          <ArrowSvg />
+        </TouchableOpacity>
+
+        <ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+        >
+          {sortFiles(files).map((file: any) => {
             return (
-              <TouchableOpacity key={file?.id} >
-                <View  style={styles.fileWrapper}>
+              <TouchableOpacity
+                onPress={() =>
+                  file['.tag'] === 'folder' &&
+                  setFolderArray([...folderArray, `/${file?.name}`])
+                }
+                key={file?.id}
+              >
+                <View style={styles.fileWrapper}>
                   <View style={styles.row}>
                     {file?.thumbnail ? (
                       <Image
@@ -141,7 +156,12 @@ export default function App() {
                     </Text>
                   </View>
                   {file['.tag'] === 'file' && (
-                    <TouchableOpacity onPress={() => file['.tag'] === 'file' && downLoadFile(file)} style={styles.gestureHandler}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        file['.tag'] === 'file' && downLoadFile(file)
+                      }
+                      style={styles.gestureHandler}
+                    >
                       <DownloadSvg />
                     </TouchableOpacity>
                   )}
@@ -162,6 +182,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 12,
   },
+  scrollView:{
+    marginBottom: Platform.OS === 'android' ? height * 0.15 : height * 0.1
+  },
   fileWrapper: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -179,6 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginLeft: 10,
+    width: width * 0.7
   },
   gestureHandler:{
     padding: 5,
@@ -189,5 +213,11 @@ const styles = StyleSheet.create({
   thumbnailImage:{
     height: 24,
     width: 24
-  }
+  },
+  backarrow:{
+    height: 24,
+    width: 24,
+    marginBottom:10,
+    marginTop:10,
+  },
 });

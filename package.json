@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@tradle/react-native-http": "^2.0.1",
+    "@types/react-native-dotenv": "^0.2.0",
     "assert": "^1.5.0",
     "browserify-zlib": "^0.1.4",
     "console-browserify": "^1.2.0",
@@ -28,6 +29,7 @@
     "react-dom": "16.13.1",
     "react-native": "~0.63.4",
     "react-native-crypto": "^2.2.0",
+    "react-native-dotenv": "^3.3.1",
     "react-native-fs": "^2.19.0",
     "react-native-gesture-handler": "~1.10.2",
     "react-native-level-fs": "^3.0.1",
